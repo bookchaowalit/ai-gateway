@@ -1,0 +1,18 @@
+{
+  "name": "solo-ai-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Central AI Gateway (solo-empire.ai-gateway.v1): repository root for tests; the service build lives in api/ai-gateway-service.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "tsx --test tests/*.ts",
+    "build": "npm --prefix api/ai-gateway-service ci --no-audit --no-fund && npm --prefix api/ai-gateway-service run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "tsx": "^4.23.13"
+  }
+}
