@@ -538,3 +538,36 @@ test('client system prompt plus alternating history keeps a valid chat order', a
     await close(upstream.server);
   }
 });
+
+function postMediaRoute(url: string, token: string | null, body: unknown) {
+  return fetch(`${url}/api/media/route`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(body),
+  });
+}
+
+test('media route endpoint returns a metadata-only decision and enforces scope', async () => {
+  const gateway = await startGateway(gatewayEnv('http://127.0.0.1:9', { SPEECHMATICS_API_KEY: 'synthetic-speechmatics' }));
+  try {
+    const body = { file_name: 'CuteERP Weekly Meeting-20260701-Meeting Recording.mp4', folder_path: '/Recordings', hints: { language: 'th' } };
+    assert.equal((await postMediaRoute(gateway.url, null, body)).status, 401);
+    assert.equal((await postMediaRoute(gateway.url, READ_TOKEN, body)).status, 403);
+
+    const response = await postMediaRoute(gateway.url, GENERATE_TOKEN, body);
+    assert.equal(response.status, 200);
+    const decision = asAny(await response.json());
+    assert.equal(decision.contract, 'solo-empire.media-route-decision.v1');
+    assert.equal(decision.content_kind.value, 'meeting');
+    assert.equal(decision.stt.provider_id, 'speechmatics-enhanced');
+    assert.equal(decision.stt.options.diarization, true);
+    assert.equal(JSON.stringify(decision).includes('synthetic-speechmatics'), false);
+    assert.equal(JSON.stringify(gateway.logs).includes('synthetic-speechmatics'), false);
+
+    const invalid = await postMediaRoute(gateway.url, GENERATE_TOKEN, { file_name: 'a.mp4', mime_type: 'application/pdf' });
+    assert.equal(invalid.status, 400);
+    assert.equal(asAny(await invalid.json()).code, 'unsupported_media_type');
+  } finally {
+    await gateway.stop();
+  }
+});
