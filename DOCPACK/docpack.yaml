@@ -1,0 +1,8 @@
+system_id: bookchaowalit/private/solo-ai-gateway
+prefix: CARD
+brand: "AI GATEWAY"
+subtitle: "Central AI Gateway: endpoint เดียวสำหรับเรียกโมเดลพร้อม scope, rate limit และ budget"
+footer: "solo-ai-gateway — Product Card"
+color: "#1d3557"
+audience: internal
+tier: L0
