@@ -14,7 +14,7 @@ function fakeDatabase(spent = 0, unknown = 0) {
 
 test('monthly AI guard reserves and releases concurrent request estimates', async () => {
   const db = fakeDatabase(0, 0);
-  const env = { LLM_LAB_MONTHLY_BUDGET_USD: '1', LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger' } as NodeJS.ProcessEnv;
+  const env = { LLM_LAB_MONTHLY_BUDGET_USD: '1', LLM_LAB_LEDGER_PATH: '/dev/null/ledger' } as NodeJS.ProcessEnv;
   const guard = createAiBudgetGuard(db, env);
   assert.ok(guard);
   const release = await guard.reserve(0.6);
@@ -27,10 +27,10 @@ test('monthly AI guard reserves and releases concurrent request estimates', asyn
 
 test('monthly AI guard fails closed for unknown provider cost', async () => {
   const db = fakeDatabase(0, 1);
-  const guard = createAiBudgetGuard(db, { LLM_LAB_MONTHLY_BUDGET_USD: '10', LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger' } as NodeJS.ProcessEnv);
+  const guard = createAiBudgetGuard(db, { LLM_LAB_MONTHLY_BUDGET_USD: '10', LLM_LAB_LEDGER_PATH: '/dev/null/ledger' } as NodeJS.ProcessEnv);
   assert.ok(guard);
   await assert.rejects(() => guard.reserve(0.1), /monthly budget/i);
-  assert.equal(getAiBudgetStatus(db, { LLM_LAB_MONTHLY_BUDGET_USD: '10', LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger' } as NodeJS.ProcessEnv).reason, 'unmetered_api_events');
+  assert.equal(getAiBudgetStatus(db, { LLM_LAB_MONTHLY_BUDGET_USD: '10', LLM_LAB_LEDGER_PATH: '/dev/null/ledger' } as NodeJS.ProcessEnv).reason, 'unmetered_api_events');
 });
 
 test('monthly AI guard is opt-in when no budget is configured', () => {
@@ -44,7 +44,7 @@ test('fixed subscription commitment reduces the shared monthly headroom', async 
   const env = {
     LLM_LAB_MONTHLY_BUDGET_USD: '10',
     AI_SUBSCRIPTION_MONTHLY_USD: '8',
-    LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger',
+    LLM_LAB_LEDGER_PATH: '/dev/null/ledger',
   } as NodeJS.ProcessEnv;
   const status = getAiBudgetStatus(db, env);
   assert.equal(status.committed_usd, 8);
@@ -59,7 +59,7 @@ test('subscription commitment larger than the shared budget fails closed', () =>
   const env = {
     LLM_LAB_MONTHLY_BUDGET_USD: '10',
     AI_SUBSCRIPTION_MONTHLY_USD: '11',
-    LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger',
+    LLM_LAB_LEDGER_PATH: '/dev/null/ledger',
   } as NodeJS.ProcessEnv;
   const status = getAiBudgetStatus(db, env);
   assert.equal(status.decision, 'deny');
@@ -72,7 +72,7 @@ test('storage commitment is reserved before variable spend', async () => {
     LLM_LAB_MONTHLY_BUDGET_USD: '10',
     AI_SUBSCRIPTION_MONTHLY_USD: '3',
     AI_STORAGE_MONTHLY_USD: '2',
-    LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger',
+    LLM_LAB_LEDGER_PATH: '/dev/null/ledger',
   } as NodeJS.ProcessEnv;
   const status = getAiBudgetStatus(db, env);
   assert.equal(status.committed_usd, 5);
@@ -89,7 +89,7 @@ test('storage commitment larger than the shared budget fails closed', () => {
   const env = {
     LLM_LAB_MONTHLY_BUDGET_USD: '10',
     AI_STORAGE_MONTHLY_USD: '11',
-    LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger',
+    LLM_LAB_LEDGER_PATH: '/dev/null/ledger',
   } as NodeJS.ProcessEnv;
   const status = getAiBudgetStatus(db, env);
   assert.equal(status.decision, 'deny');
@@ -115,7 +115,7 @@ test('gateway denies a request before provider fetch when the monthly cap is spe
     AI_GATEWAY_INPUT_USD_PER_1K: '0.01',
     AI_GATEWAY_OUTPUT_USD_PER_1K: '0.02',
     LLM_LAB_MONTHLY_BUDGET_USD: '1',
-    LLM_LAB_LEDGER_PATH: '/dev/null/solo-empire-ledger',
+    LLM_LAB_LEDGER_PATH: '/dev/null/ledger',
     NODE_ENV: 'test',
   } as NodeJS.ProcessEnv;
   const guard = createAiBudgetGuard(db, env);
@@ -142,7 +142,7 @@ test('gateway denies a request before provider fetch when the monthly cap is spe
 });
 
 test('monthly AI guard includes active GPU session reservations from the shared ledger', async () => {
-  const tempDir = mkdtempSync('/tmp/solo-empire-ai-budget-');
+  const tempDir = mkdtempSync('/tmp/ai-budget-');
   const ledgerPath = join(tempDir, 'budget-events.jsonl');
   writeFileSync(ledgerPath, JSON.stringify({
     event: 'session_started',

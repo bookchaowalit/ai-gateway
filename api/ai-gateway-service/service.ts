@@ -34,7 +34,7 @@ export const SERVICE_ENV_DEFAULTS: Readonly<Record<string, string>> = {
   AI_GATEWAY_ERROR_COST_POLICY: 'bounded',
   // The hosted gateway owns no GPU sessions; point the shared ledger reader at
   // a path that does not exist so it contributes zero.
-  LLM_LAB_LEDGER_PATH: '/nonexistent/solo-empire-ai-gateway/gpu-ledger.jsonl',
+  LLM_LAB_LEDGER_PATH: '/nonexistent/ai-gateway/gpu-ledger.jsonl',
 };
 
 const DEFAULT_MAX_BODY_BYTES = 1_048_576;
