@@ -7,7 +7,7 @@ budgets, and records run telemetry without storing prompts or outputs.
 | | |
 |---|---|
 | Public URL | https://api.bookchaowalit.com (health: `/healthz`) |
-| Host | Railway project `solo-ai-gateway`, service `ai-gateway`, always-on |
+| Host | Railway project `ai-gateway`, service `ai-gateway`, always-on |
 | Data | Railway volume at `/data` (SQLite telemetry) |
 | Registry | solo-empire `repository-catalog/registries/online-systems.yaml` (`ai-gateway`) |
 | Runbook | solo-empire `operations/runbooks/AI-API-GATEWAY-RUNBOOK.md` |
