@@ -155,3 +155,32 @@ test('token order and file modes: EMPIRE_TOKEN, EMPIRE_TOKEN_FILE (600), then th
     rmSync(home, { recursive: true, force: true });
   }
 });
+
+test('validation errors are the fixed text invalid_arguments and echo no argument name or value', async () => {
+  const f = fake();
+  const client = await connect(f);
+  const attempts: Array<[string, Record<string, unknown>]> = [
+    ['ai_gateway.status', { UNTRUSTED_MARKER: 'VALUE_MARKER' }],
+    ['ai_gateway.budget', { UNTRUSTED_MARKER: { nested: 'VALUE_MARKER' } }],
+    ['ai_gateway.rate_limit', { token: 'VALUE_MARKER' }],
+  ];
+  for (const [name, args] of attempts) {
+    let text: string;
+    let thrown = false;
+    try {
+      const result = await client.callTool({ name, arguments: args });
+      text = JSON.stringify(result);
+      assert.equal(result.isError, true);
+    } catch (error) {
+      thrown = true;
+      text = `${(error as Error).message} ${JSON.stringify(error)}`;
+    }
+    assert.equal(thrown, false, 'rejection is a tool result, not a protocol error that carries SDK text');
+    assert.ok(text.includes('invalid_arguments'), text);
+    assert.doesNotMatch(text, /MARKER/);
+  }
+  const unknown = await client.callTool({ name: 'x.UNTRUSTED_MARKER', arguments: { a: 'VALUE_MARKER' } });
+  assert.equal(unknown.isError, true);
+  assert.doesNotMatch(JSON.stringify(unknown), /MARKER/);
+  assert.equal(f.requests.length, 0);
+});

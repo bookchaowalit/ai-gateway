@@ -17,6 +17,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 export const URL_KEY = 'EMPIRE_AI_GATEWAY_API';
@@ -152,7 +153,10 @@ export function createServer({ baseUrl, token, fetchImpl = fetch }: Options): Mc
     throw new ToolFailed(failure(502));
   }
 
+  const known = new Set<string>();
+
   function tool(name: string, description: string, pick: (body: Record<string, unknown>) => unknown): void {
+    known.add(name);
     server.registerTool(name, { description, inputSchema: NoArguments, annotations: { readOnlyHint: true } }, async () => {
       try {
         const body = pick(await status());
@@ -167,6 +171,19 @@ export function createServer({ baseUrl, token, fetchImpl = fetch }: Options): Mc
   tool('ai_gateway.status', 'Gateway status: configured routes and providers, budget, rate limit and service info.', (b) => b);
   tool('ai_gateway.budget', 'The gateway usage and budget report (spend and limits).', (b) => ({ budget: b.budget ?? null }));
   tool('ai_gateway.rate_limit', 'The gateway rate-limiter status.', (b) => ({ rate_limit: b.rate_limit ?? null }));
+
+  // The SDK validates arguments before the tool callback and its message names the argument and echoes the value.
+  // Validate first, here, so every rejection is the same fixed text and the SDK only ever sees valid calls.
+  type CallHandler = (request: unknown, extra: unknown) => Promise<unknown>;
+  const handlers = (server.server as unknown as { _requestHandlers: Map<string, CallHandler> })._requestHandlers;
+  const sdkHandler = handlers.get('tools/call');
+  if (!sdkHandler) throw new Error('tools/call handler is not registered');
+  const rejected = (text: string) => ({ isError: true, content: [{ type: 'text' as const, text }] });
+  server.server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
+    if (!known.has(request.params.name)) return rejected('unknown_tool');
+    if (!NoArguments.safeParse(request.params.arguments ?? {}).success) return rejected('invalid_arguments');
+    return (await sdkHandler(request, extra)) as never;
+  });
   return server;
 }
 
