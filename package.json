@@ -9,10 +9,18 @@
   },
   "scripts": {
     "test": "tsx --test tests/*.ts",
-    "build": "npm --prefix api/ai-gateway-service ci --no-audit --no-fund && npm --prefix api/ai-gateway-service run build"
+    "build": "npm --prefix api/ai-gateway-service ci --no-audit --no-fund && npm --prefix api/ai-gateway-service run build",
+    "mcp": "node mcp/bin.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
     "tsx": "^4.23.13"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^4.6.6"
+  },
+  "bin": {
+    "ai-gateway-mcp": "mcp/bin.mjs"
   }
 }

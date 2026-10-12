@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ai-gateway": {
+      "command": "node",
+      "args": ["mcp/bin.mjs"]
+    }
+  }
+}

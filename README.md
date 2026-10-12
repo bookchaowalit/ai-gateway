@@ -44,3 +44,21 @@ railway link --project solo-ai-gateway --service ai-gateway --environment produc
 railway up --ci
 curl -fsS https://api.bookchaowalit.com/healthz
 ```
+
+## MCP server (`ai-gateway-mcp`)
+
+`mcp/ai-gateway-mcp.ts` is the gateway's MCP server (stdio, `@modelcontextprotocol/sdk`). It is read-only: three tools
+(`ai_gateway.status`, `ai_gateway.budget`, `ai_gateway.rate_limit`) that each make one `GET /api/ai/status` call (scope
+`api:read`) with the caller's own scoped gateway token. There is deliberately no generate or media-route tool (those
+spend provider budget). No tool accepts an actor, workspace, tenant, delegation or token argument; inputs are strict, so
+unknown arguments are rejected before any HTTP call. Errors are a fixed message from the HTTP status (for example
+`403: forbidden`), never upstream text; tokens with whitespace or control characters are refused.
+
+- URL: `EMPIRE_AI_GATEWAY_API` (env, else the owner-only `~/.config/empire-platform/client.env`); https, http only on
+  loopback, no credentials, query or fragment.
+- Token, first match wins: `EMPIRE_TOKEN`, `EMPIRE_TOKEN_FILE` (mode 600), then the owner's
+  `~/.config/solo-empire/production-tools.ai-gateway.token` (mode 600). This is a scoped gateway token, not an Empire
+  platform JWT, so the platform automation tokens do not apply here.
+- Run: `npm install`, then `npm run mcp` or `node mcp/bin.mjs` (see `.mcp.json`; `bin: ai-gateway-mcp`). It runs through
+  `tsx`; the hosted service build and Dockerfile do not use it.
+- Tests: `npm test` (`tests/ai_gateway_mcp_test.ts`; fake `fetch`, in-memory MCP client, no network).
