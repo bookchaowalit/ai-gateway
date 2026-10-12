@@ -1,4 +1,4 @@
-# solo-ai-gateway
+# ai-gateway
 
 Central AI Gateway (`solo-empire.ai-gateway.v1`): one authenticated HTTPS
 endpoint that routes model calls, enforces per-client scopes, rate limits and
