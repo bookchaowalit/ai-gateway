@@ -1,5 +1,4 @@
-# ai-gateway
-
+# platform-ai-gateway-api
 Central AI Gateway (`solo-empire.ai-gateway.v1`): one authenticated HTTPS
 endpoint that routes model calls, enforces per-client scopes, rate limits and
 budgets, and records run telemetry without storing prompts or outputs.
@@ -7,7 +6,7 @@ budgets, and records run telemetry without storing prompts or outputs.
 | | |
 |---|---|
 | Public URL | https://api.bookchaowalit.com (health: `/healthz`) |
-| Host | Railway project `ai-gateway`, service `ai-gateway`, always-on |
+| Host | Railway project `platform-ai-gateway-api`, service `ai-gateway`, always-on |
 | Data | Railway volume at `/data` (SQLite telemetry) |
 | Registry | solo-empire `repository-catalog/registries/online-systems.yaml` (`ai-gateway`) |
 | Runbook | solo-empire `operations/runbooks/AI-API-GATEWAY-RUNBOOK.md` |
