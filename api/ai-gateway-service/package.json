@@ -13,5 +13,8 @@
   },
   "devDependencies": {
     "esbuild": "0.28.1"
+  },
+  "dependencies": {
+    "jose": "^6.1.3"
   }
 }
