@@ -1,0 +1,9 @@
+# Trivy suppressions, each with a reviewed reason (DevSecOps Phase 1).
+misconfigurations:
+  - id: DS-0002
+    paths:
+      - Dockerfile
+    statement: >-
+      Not a root runtime. The image starts as root only so api/ai-gateway-service/entrypoint.sh can
+      chown the Railway volume (mounted root-owned at /data), then it execs the server with
+      `setpriv --reuid=node --regid=node`. A Dockerfile USER line would make that chown impossible.
